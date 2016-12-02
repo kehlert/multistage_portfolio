@@ -1,0 +1,121 @@
+\documentclass{amsart}
+
+\usepackage{amssymb, amsfonts, hyperref}
+\usepackage{enumerate}
+
+\newtheorem{thm}{Theorem}[section]
+\newtheorem{cor}[thm]{Corollary}
+\newtheorem{prop}[thm]{Proposition}
+\newtheorem{lem}[thm]{Lemma}
+
+\theoremstyle{definition}
+\newtheorem{defn}[thm]{Definition}
+\newtheorem{defns}[thm]{Definitions}
+\newtheorem{con}[thm]{Construction}
+\newtheorem{exmp}[thm]{Example}
+\newtheorem{exmps}[thm]{Examples}
+\newtheorem{notn}[thm]{Notation}
+\newtheorem{notns}[thm]{Notations}
+\newtheorem{addm}[thm]{Addendum}
+\newtheorem{exer}[thm]{Exercise}
+
+\theoremstyle{remark}
+\newtheorem{rem}[thm]{Remark}
+\newtheorem{rems}[thm]{Remarks}
+\newtheorem{warn}[thm]{Warning}
+\newtheorem{sch}[thm]{Scholium}
+
+\bibliographystyle{plain}
+
+%--------Meta Data: Fill in your info------
+\title{Optimizing Multistage Portfolio Returns with Risk Constraints}
+
+\author{Kurt Ehlert}
+
+\date{\today}
+
+\begin{document}
+
+\begin{abstract}
+
+TODO here goes the abstract
+
+\end{abstract}
+
+\maketitle
+
+\tableofcontents
+
+\section{model of market, why use geometric BM and risk free thing}
+
+Write SDE of geometric BM, and explain why its different intuitively from regular BM. Put in reasons and also a picture of geometric BM trajectories vs regular BM trajectories. Include references on why to use geometric BM.\cite{hull}
+
+Solve 1d geometric BM. Solve d dim. geometric BM with correlations. Include some plots of that. Also include equation and plot of returns when money is distributed equally between all assets.
+
+\section{Markowitz's model}
+
+reference those slides online and markowitz's paper. Setup the model. Solve it with Lagrange. When can't it be solved?
+
+\begin{defn}  This is how to define a definition.
+\end{defn}
+
+And for a theorem and its proof you would type:
+
+\begin{thm}
+This is the statement of a theorem.
+\end{thm}
+\begin{proof}
+And this shows that the statement is correct.
+\end{proof}
+
+Note that the numbering is taken care of automatically, and that we've predefined a bunch of these sorts of environments to take care lemmas, corollaries and such in the header. 
+
+Another useful kind of enviroment is the equation environment.  Equations
+get numbered in sequence with statements, as for example
+
+\begin{equation}  e = mc^2
+\end{equation}
+
+Note if you do not want a numbered equation, you can use the
+environment ``equation*''
+ like so:
+
+\begin{equation*}
+e=mc^2
+\end{equation*}
+
+There are plenty of other equation-type enviroments that allow you to
+align several equations and such. The AMS's guide is a
+good place to start with these.
+
+You can also typeset math directly in a paragraph by placing it within
+dollar signs.  This is called ``math mode.''  For example: Let $e$
+be energy, $m$ be momentum and $c$ be the speed of light.  Then
+Einstein's famous equation says that $e=mc^2$.  This is useful, but
+remember that it is harder to read inline math than displayed math. 
+
+Remember that letters get put in a different font in math mode, so
+whenever you are referencing a mathematical object you should always
+put it in dollar signs.  For example, $f$ is a function, but f is just
+a random letter.
+
+Both and  have good lists of other symbols you can use in math mode.
+These include greek letters ($\alpha, \beta, \Gamma, \Delta$),
+operators ($\otimes, +, \sum$) and much more ($\leq, \diamond$).
+
+
+\section{V@R, CV@R}
+
+If you want to draw diagrams, you should use xypic.  It's actually
+much easier than it looks, and we've already included it in the header
+above.  Here is an example. 
+
+\section{multistage}
+
+\subsection*{Acknowledgments}  I downloaded and then modified the \LaTeX template at \url{www.math.uchicago.edu/~may/VIGRE/VIGRE2011/TEMPLATE.tex}
+
+\bibliography{719_project}
+\bibliographystyle{ieeetr}
+
+\end{document}
+
