@@ -1,6 +1,6 @@
 \documentclass{amsart}
 
-\usepackage{amssymb, amsfonts, hyperref, graphicx}
+\usepackage{amssymb, amsfonts, hyperref, graphicx, bbm}
 \usepackage{enumerate}
 
 \newtheorem{thm}{Theorem}[section]
@@ -134,67 +134,63 @@ There is also a risk-free asset with a constant rate of return $r$. Let $x_i$ be
 \begin{equation*}
 C(x, R_i) = r x_r + \sum_{i=1}^n R_i x_i 
 \end{equation*}
+and let $C$ be the capital we have at $t=0$.
 Let $\Sigma$ be the $n\times n$ covariance matrix of the stocks. Then
 \begin{align*}
 \text{Var}[ C(x,R_i)] = x^T \Sigma x
 \end{align*}
 Thus the problem we want to solve is
-\begin{equation}
-\max_{x\ge 0} \mathbb{E}C(x, R_i) = r x_r + \sum_{i=1}^n x_i e^{\mu_i t}, x^T \Sigma x \le v
+\begin{equation}\label{eq:markowitz}
+\max_{x,x_r\ge 0} \mathbb{E}C(x, R_i) = r x_r + \sum_{i=1}^n x_i e^{\mu_i t}, x^T \Sigma x \le v, x^T \mathbbm{1} + x_r \le C
 \end{equation}
+where $x$ is the vector of the stock allocations and $\mathbbm{1}$ is the column vector of all ones.
 We can actually solve the above problem with Lagrange multipliers.
 
 \subsubsection{Solving the Markowitz Portfolio Optimization Problem}
+We do not prove that that Lagrange multiplier are applicable to this optimization problem, but they do work. Let $\bar{\mu}_i = e^{\mu_i t},$ and $\bar{r} = e^{rt}$.
+
 \begin{thm}
-This is the statement of a theorem.
+The solution to the portfolio optimization problem \eqref{eq:markowitz} is
+\begin{align*}
+x &= \frac{\sqrt{v} \Sigma^{-1} (\bar{\mu} - \bar{r}\mathbbm{1})}{\sqrt{(\bar{\mu} - \bar{r}\mathbbm{1}) \Sigma^{-1} (\bar{\mu} - \bar{r}\mathbbm{1})}}\\
+x_r &= C - x^T \mathbbm{1}
+\end{align*}
 \end{thm}
 \begin{proof}
-And this shows that the statement is correct.
-\end{proof}
-
-Note that the numbering is taken care of automatically, and that we've predefined a bunch of these sorts of environments to take care lemmas, corollaries and such in the header. 
-
-Another useful kind of environment is the equation environment.  Equations
-get numbered in sequence with statements, as for example
-
-\begin{equation}  e = mc^2
-\end{equation}
-
-Note if you do not want a numbered equation, you can use the
-environment ``equation*''
- like so:
-
+The Lagrange function corresponding to \eqref{eq:markowitz} is
 \begin{equation*}
-e=mc^2
+L(x,x_r,\lambda) = \bar{r} x_r + \bar{\mu}^T x + \lambda_1(x^T \Sigma x - v) + \lambda_2(x^T \mathbbm{1} + x_r - C)
 \end{equation*}
 
-There are plenty of other equation-type enviroments that allow you to
-align several equations and such. The AMS's guide is a
-good place to start with these.
+The derivatives of $L$ are
+\begin{align*}
+\nabla_x L &= \bar{\mu} + 2\lambda_1\Sigma x + \lambda_2 \mathbbm{1}\\
+\frac{\partial L}{\partial x_r} &= \bar{r}+\lambda_2\\
+\frac{\partial L}{\partial \lambda_1} &= x^T \Sigma x - v\\
+\frac{\partial L}{\partial \lambda_2} &= x^T \mathbbm{1} + x_r - C
+\end{align*}
 
-You can also typeset math directly in a paragraph by placing it within
-dollar signs.  This is called ``math mode.''  For example: Let $e$
-be energy, $m$ be momentum and $c$ be the speed of light.  Then
-Einstein's famous equation says that $e=mc^2$.  This is useful, but
-remember that it is harder to read inline math than displayed math. 
+Setting $\nabla_x L$ and solving for $x$ implies that
+\begin{equation}\label{eq:x_in_terms_lambda}
+x = -\frac{1}{2\lambda_1} \Sigma^{-1}(\bar{\mu} - \bar{r}\mathbbm{1})
+\end{equation}
+Now if we set $\frac{\partial L}{\partial \lambda_1} = 0$, we have $x^T\Sigma x = v$. Substituting the above expression for $x$ into $x^T\Sigma x = v$ gives
+\begin{equation*}
+\frac{1}{4\lambda_1^2} (\bar{\mu}-\bar{r}\mathbbm{1})^T\Sigma^{-1} (\bar{\mu}-\bar{r}\mathbbm{1}) = v
+\end{equation*}
+Solving for $\lambda_1$ leads to
+\begin{equation*}
+\lambda_1 = \pm \frac{1}{2\sqrt{v}} \sqrt{(\bar{\mu}-\bar{r}\mathbbm{1})^T\Sigma^{-1} (\bar{\mu}-\bar{r}\mathbbm{1})}
+\end{equation*}
+Substituting that expression for $\lambda_1$ back into \eqref{eq:x_in_terms_lambda} gives us the solution for $x$. Now set $\frac{\partial L}{\partial \lambda_1} = 0$ (i.e. use the capital constraint) to get the solution for $x_r$.
+\end{proof}
 
-Remember that letters get put in a different font in math mode, so
-whenever you are referencing a mathematical object you should always
-put it in dollar signs.  For example, $f$ is a function, but f is just
-a random letter.
+There is Python code in the appendix that tests the Lagrange multiplier solution (TODO). It compares the Lagrange solution to a solution obtained by Gurobi. For the example parameters, the Lagrange solution is actually slightly better than Gurobi's. The output is in the appendix (TODO).
 
-Both and  have good lists of other symbols you can use in math mode.
-These include greek letters ($\alpha, \beta, \Gamma, \Delta$),
-operators ($\otimes, +, \sum$) and much more ($\leq, \diamond$).
+\subsection{V@R, CV@R}
 
 
-\section{V@R, CV@R}
-
-If you want to draw diagrams, you should use xypic.  It's actually
-much easier than it looks, and we've already included it in the header
-above.  Here is an example. 
-
-\section{multistage}
+\subsection{multistage}
 
 \subsection*{Acknowledgments}  I downloaded and then modified the \LaTeX template at \url{www.math.uchicago.edu/~may/VIGRE/VIGRE2011/TEMPLATE.tex}
 
