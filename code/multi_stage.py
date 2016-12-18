@@ -4,7 +4,7 @@ import numpy as np
 from scipy.stats import lognorm
 import matplotlib.pyplot as plt
 
-np.random.seed(0)
+#np.random.seed(0)
 
 #####################
 ## set the model parameters
@@ -14,12 +14,12 @@ interest_rate = 0.01
 initial_prices = {'B': 100, 'S0': 50, 'S1': 75}
 drift = {'S0': 0.03, 'S1': 0.035}
 volatility = {'S0': 0.1, 'S1': 0.15}
-correlation = np.array[[1,0],[0,1]] #correlation matrix of S0 and S1
+correlation = np.array([[1,0],[0,1]]) #correlation matrix of S0 and S1
 
 alpha = 0.95
 max_avar = 1000
-branch_factor = 20 #number of branches stemming from each node in the scenario tree
-stage_times = [0, 2, 3, 4]
+branch_factor = 50 #number of branches stemming from each node in the scenario tree
+stage_times = [0, 2, 4]
 #(probability, new rate)
 #interest_rate_scenarios = [(0, 0.001), (1, 0.01)] 
 
@@ -29,6 +29,9 @@ stage_times = [0, 2, 3, 4]
 stocks = drift.keys()
 securities = stocks + ['B']
 print(securities)
+
+#used to create correlated returns
+L = np.linalg.cholesky(correlation)
 
 n_stages = len(stage_times)-1 #-1 because we sell everything at the final time
 n_nodes_last_stage = branch_factor ** (n_stages-1)
@@ -101,22 +104,32 @@ for node in nodes_in_stage[n_stages-1]:
 #stock returns
 for s in stocks:
     returns[0,s] = []
-    for i in range(1, n_stages):
-        dt = stage_times[i]-stage_times[i-1]
-        mean = drift[s] * dt - 0.5 * volatility[s]**2 * dt
-        std = volatility[s] * math.sqrt(dt)
-        rvs = np.random.lognormal(mean, std, len(nodes_in_stage[i]))
+for i in range(1, n_stages): 
+    #key = stock name
+    #value = correlated normal random variable
+    normal_rvs = np.random.normal(size = (len(stocks),len(nodes_in_stage[i])))
+    correlated_normal_rvs = dict(zip(stocks, L.dot(normal_rvs)))
+    dt = stage_times[i]-stage_times[i-1]
+    for s in stocks: 
+        mean = (drift[s] - 0.5 * volatility[s]**2) * dt
+        ret = mean + volatility[s] * correlated_normal_rvs[s]
+        #rvs = np.random.lognormal(mean, std, len(nodes_in_stage[i]))
+        log_norm_rvs = np.exp(ret)
         index = 0
         for node in nodes_in_stage[i]:
-            returns[node,s] = returns[parents[node],s] + [rvs[index]]
+            returns[node,s] = returns[parents[node],s] + [log_norm_rvs[index]]
             index += 1
 
-for s in stocks:    
-    dt = stage_times[-1]-stage_times[-2]
-    mean = drift[s] * dt - 0.5 * volatility[s]**2 * dt
-    std = volatility[s] * math.sqrt(dt)
-    for node in nodes_in_stage[n_stages-1]:
-        future_returns[node,s] = np.random.lognormal(mean, std, branch_factor)
+dt = stage_times[-1]-stage_times[-2]
+for node in nodes_in_stage[n_stages-1]:
+    normal_rvs = np.random.normal(size = (len(stocks),branch_factor))
+    #key = stock name
+    #value = correlated normal random variable
+    correlated_normal_rvs = dict(zip(stocks, L.dot(normal_rvs)))
+    for s in stocks:
+        mean = drift[s] * dt - 0.5 * volatility[s]**2 * dt
+        ret = mean + volatility[s] * correlated_normal_rvs[s]
+        future_returns[node,s] = np.exp(ret)
 
 #####################
 ## setup the objective function for SAA
@@ -196,7 +209,7 @@ for s in sorted(securities):
 #gives the percent return
 percent_return = (m.objVal / capital - 1)*100
 print('Projected Return: %0.2f%%' % round(percent_return,2))
-sys.exit(0)
+
 ##########
 ## calculate AV@R of above solution
 ##########
@@ -236,14 +249,14 @@ expected_gain = -1*np.mean(losses)
 print ''
 print('Expected gain: %g' % expected_gain)
 print('Expected return: %g%%' % (expected_gain / capital * 100))
-print('Monte Carlo V@R: %g' % p)
+print('V@R based on losses percentile: %g' % p)
 losses_exceeding_var = [l for l in losses if l > p]
 avar = None
 if losses_exceeding_var:
 	avar = np.mean(losses_exceeding_var)
 else:
 	avar = float('nan')
-print('Monte Carlo AV@R: %g' % avar)
+print('AV@R based on s losses percentile: %g' % avar)
 
 ##########
 ## plot efficient frontier (x-axis = AV@R, y-axis = return as a %)
