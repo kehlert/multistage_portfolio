@@ -105,16 +105,16 @@ Thus $X_t$ has a log-normal distribution, and
 \text{Var}X &= X_0^2 e^{2\mu t}(e^{\sigma^2 t} - 1)
 \end{align*}
 
-\subsection{Correlated d-Dimensional Geometric Brownian Motion}
-If the Brownian motions driving each SDE are all independent, then the solution is just the d-dimensional version of \eqref{eq:GBM_soln}. The much more interesting case is when there is a positive correlation between the different dimensions. In other words, we want to find and solve the SDE where $X(t)$ is d-dimensional GBM and $\text{Corr}(X_i(t), X_j(t)) = \rho_{ij}$. This would allow us to model correlated stock prices.
+\subsection{Correlated d-Dimensional Geometric Brownian Motion}\label{corr_gmb}
+If the Brownian motions driving each SDE are all independent, then the solution is just the d-dimensional version of \eqref{eq:GBM_soln}. The much more interesting case is when there is a correlation between the different dimensions. In other words, we want to find and solve the SDE where $X(t)$ is d-dimensional GBM and $\text{Corr}(\log X_i(t), \log X_j(t)) = \rho_{ij}$. This would allow us to model correlated stock returns. We are interested in the log of the prices, because we want the returns to be correlated. We will see that even if the returns are correlated, the correlation between the stock prices goes to zero.
 
-\section{Optimizing a Portfolio}
+\section{Portfolio Optimization}
 Assume that there are $n$ stocks we can invest in, and also one risk-free asset that gives a constant rate of return $r$. We will model the path of all the stock prices as $n$ independent geometric Brownian motions. The average rate of return (also known as drift) and the volatility of each stock can vary.
 
-If we simply want to maximize the expected return, then we should put all of our money into the asset with the highest expected return. However, that is not a very sensible approach, because it does not take into account our risk tolerance. The goal of this section is to present two approaches for balancing the expected return and the risk. The first approach is the one used by Markowitz, where we will maximize the return subject to a constraint on the variance of the return. The second method is to maximize the return subject to a constraint on the conditional value-at-risk (CV@R).
+If we simply want to maximize the expected return, then we should put all of our money into the asset with the highest expected return. However, that is not a very sensible approach, because it does not take into account our risk tolerance. The goal of this section is to present two approaches for balancing the expected return and the risk. The first approach is the one used by Markowitz, where we will maximize the return subject to a constraint on the variance of the return. The second method is to maximize the return subject to a constraint on the conditional value-at-risk (CV@R). Finally, we will consider a multistage model, where we can reinvest the money at a few given time points.
 
-\subsection{Markowitz's approach}
-\subsubsection{Portfolio Optimization Problem Description}
+\section{Markowitz Portfolio Optimization}
+\subsubsection{Problem Description}
 Suppose that we have $W$ dollars to invest, and we want to maximize the expected return after time $T$. However, we also want to keep the variance of the return below a specified level. There are $n$ stocks to invest in. Let $X_i(t)$ be the price of stock $i$ at time $t$. As mentioned earlier, we model the stock prices as independent paths of geometric Brownian motion. Therefore $X_i(t)$ is log-normally distributed, and
 \begin{align*}
 \mathbb{E} X_i(t) &= X_i(0)e^{\mu_i t}\\
@@ -146,16 +146,16 @@ Thus the problem we want to solve is
 where $x$ is the vector of the stock allocations and $\mathbbm{1}$ is the column vector of all ones.
 We can actually solve the above problem with Lagrange multipliers.
 
-\subsubsection{Solving the Markowitz Portfolio Optimization Problem}
-We do not prove that that Lagrange multiplier are applicable to this optimization problem, but they do work. Let $\bar{\mu}_i = e^{\mu_i t},$ and $\bar{r} = e^{rt}$.
+\subsection{Solving the Markowitz Portfolio Optimization Problem}
+Let $\bar{\mu}_i = e^{\mu_i t},$ and $\bar{r} = e^{rt}$. To simplify the problem, suppose that we are allowed to borrow money at the interest rate $r$, thus we allow $x_r < 0$.
 
-\begin{thm}
+\begin{prop}
 The solution to the portfolio optimization problem \eqref{eq:markowitz} is
 \begin{align*}
 x &= \frac{\sqrt{v} \Sigma^{-1} (\bar{\mu} - \bar{r}\mathbbm{1})}{\sqrt{(\bar{\mu} - \bar{r}\mathbbm{1}) \Sigma^{-1} (\bar{\mu} - \bar{r}\mathbbm{1})}}\\
 x_r &= C - x^T \mathbbm{1}
 \end{align*}
-\end{thm}
+\end{prop}
 \begin{proof}
 The Lagrange function corresponding to \eqref{eq:markowitz} is
 \begin{equation*}
@@ -170,7 +170,7 @@ The derivatives of $L$ are
 \frac{\partial L}{\partial \lambda_2} &= x^T \mathbbm{1} + x_r - C
 \end{align*}
 
-Setting $\nabla_x L$ and solving for $x$ implies that
+Setting $\nabla_x L = 0$ and solving for $x$ implies that
 \begin{equation}\label{eq:x_in_terms_lambda}
 x = -\frac{1}{2\lambda_1} \Sigma^{-1}(\bar{\mu} - \bar{r}\mathbbm{1})
 \end{equation}
@@ -185,14 +185,102 @@ Solving for $\lambda_1$ leads to
 Substituting that expression for $\lambda_1$ back into \eqref{eq:x_in_terms_lambda} gives us the solution for $x$. Now set $\frac{\partial L}{\partial \lambda_1} = 0$ (i.e. use the capital constraint) to get the solution for $x_r$.
 \end{proof}
 
-There is Python code in the appendix that tests the Lagrange multiplier solution (TODO). It compares the Lagrange solution to a solution obtained by Gurobi. For the example parameters, the Lagrange solution is actually slightly better than Gurobi's. The output is in the appendix (TODO).
+I wrote some Python code that uses Gurobi to find the solution to \ref{eq:markowitz} when there are two stocks and one risk-free asset. To be more specific, the code plots the efficient frontier (see figure \ref{fig:markowitz}), which means that plots given standard deviations on the axis, and the maximum return on the y-axis. Since the model also handles correlated stocks, the code plots efficient frontiers for various correlation coefficients. We can see that the return is highest for a given standard deviation when the correlation is negative, and the return decreases as the correlation increases.
+\begin{figure}
+\centering
+\includegraphics[scale=0.5]{markowitz.png}
+\caption{Efficient frontiers based on the Markowitz model. The different curves correspond to different correlations between the stock returns.  Code can be found in the appendix. $\mu = (0.03, 0.035), \sigma=(0.1, 0.15), r = 0.02$.}
+\label{fig:markowitz}
+\end{figure}
 
-\subsection{CV@R}
+\section{Average Value-at-Risk}
+The Markowitz model involves a linear objective and a quadratic constraint. The objective is the expected return, and the constraint control the variance of the return. The model can be switched such that you specify the expected return you want, which leads to a linear constraint. And then you minimize the variance, which means you have a quadratic objective. Either way, there is a quadratic term.
 
+Additionally, the Markowitz model discourages strategies that have high variance. This is a problem, because it penalizes low returns and high returns. Ideally, we would like to only penalize low returns.
 
-\subsection{multistage}
+Value-at-risk (V@R) is controls the size of our losses. The $\text{V@R}_\alpha$of a random variable $X$ is
+\begin{equation*}
+\text{V@R}(X) = \inf\{t : P(X \le t) \ge \alpha\}
+\end{equation*}
+Average value-at-risk (AV@R) is a way to quantify the expected losses of a strategy. If $X$ is a continuous random variable, then the AV@R$_\alpha$ of a random variable X is defined as
+\begin{equation*}
+\text{AV@R}_\alpha (X) = \mathbb{E}[X | X \ge V@R(X)]
+\end{equation*}
+We can incorporate $AV@R$ into a stochastic program by using a set of linear constraints. Thus by using AV@R as our risk-measure, we can avoid quadratic terms in our portfolio optimization problem, plus it only penalizes losses.
 
-\subsection*{Acknowledgments}  I downloaded and then modified the \LaTeX template at \url{www.math.uchicago.edu/~may/VIGRE/VIGRE2011/TEMPLATE.tex}
+Let's say there are two stocks and one risk-free asset. The risk-free asset's rate of return is 2\%. Also assume that the stock prices follow geometric Brownian motion and that the returns are not correlated. Thus
+\begin{equation*}
+dX_i(t) = \mu_i X_i(t) dt + \sigma_i dB_i(t)
+\end{equation*}
+where $i=1,2$. For stock $i$, $\mu_i$ is the average rate of return per year, and $\sigma_i^2$ the rate of return's variance per year.
+Say we have \$10,000 to invest, and we want to maximum our returns after 3 years. Also suppose that
+\begin{align*}
+\mu &= (0.3, 0.035)\\
+\sigma &= (0.1, 0.15)\\
+\end{align*}
+Let's say we could tolerate losing $1,000$. Let $x$ be vector representing the amount of money invested in each of the assets. $x_1$ and $x_2$ are for stocks 1 and 2, and $x_3$ is for the risk-free asset. Then we would like to solve
+\begin{align*}
+&\max_x \sum_{i=1}^2\mathbb{E}[e^{3\mu_i}]x_i + e^{0.02(3)}x_3 \text{ s.t.}\\
+&\sum_{i=1}^3 x_i = 10,000\\
+&\text{AV@R}_{0.05}\left(10,000 - \sum_{i=1}^2 X_i(3) X(0)^{-1} x_i + e^{0.02(3)} x_3\right) \le 1,000\\
+&x \ge 0
+\end{align*}
+The term in the parentheses of $\text{AV@R}_{0.05}$ represents the random loss. If we discretize $X_i$ by choosing a bunch of scenarios, then we can turn the last constraint into a set of linear constraints. There will be an extra constraint and variable for each scenario. Discretizing $X_i(3)$ is fairly straightforward, because we know that it is log-normally distributed. We can also handle correlated returns. Section \ref{corr_gmb} shows how to correlate the stock returns. 
+
+If we discretize $X_i(3)$ by drawning $N$ random variables for each stock, then the problem becomes
+\begin{align*}
+&\max_{x,w,\gamma} \sum_{i=1}^2 \bar{\mu}_i x_i +  e^{0.02(3)} x_3 \text{ s.t.}\\
+&\sum_{i=1}^3 x_i = 10,000,  \forall k = 1,\ldots, N\\
+& w_k \ge 10,000 - \sum_{i=1}^2 X_i(3) X(0)^{-1} x_i - e^{0.02(3)} x_3 - \gamma, \forall k = 1,\ldots, N\\
+&x \ge 0, w \ge 0, \gamma \in \mathbb{R}
+\end{align*}
+where $\bar{\mu}_i = \frac{1}{N} \sum_{k=1}^N X_i^k(3)$.
+It's probably not necessary to discrete the above problem, but it allows for more flexibility. We can make the model more complex, and then it's straightforward to add random events that affect the prices. Note that we need to decide how to invest our money at year 0, and then we sell it all at year 3. I wrote Python code that implements a Gurobi model for the above problem. It plots the efficient frontier (figure \ref{fig:single_stage}), which means that it specifies a maximum AV@R, and then maximizes the return.
+\begin{figure}
+\centering
+\includegraphics[scale=0.5]{single_stage.png}
+\caption{Efficient frontier based on the single-stage AV@R model.  Code can be found in the appendix.}
+\label{fig:single_stage}
+\end{figure}
+
+\section{Multistage Portfolio Optimization Without Transaction Costs}
+We might want to extend the model, and allow for asset reallocation at specified times. We will not include transaction costs, but we will include the possibility of correlated stock returns. Instead of just having $N$ scenarios, the plan is to use a scenario tree. Let's say we are allowed to reallocate our capital after the first year, and then we sell everything after year 3. We also have the same AV@R constraint as before, which, roughly speaking, limits our worst losses to be less than \$1,000.  The optimization problem is basically the same as the earlier one, but now we need to add another constraint. This constraint makes sure that we only allocate capital that we already have at each stage. Let $x^j$ be the allocation as of year $j$, then the problem becomes
+\begin{align*}
+&\max_{x,w,\gamma} \sum_{i=1}^2 \bar{\mu}_i x^2_i +  e^{0.02(3)} x_3^3 \text{ s.t.}\\
+&\sum_{i=1}^3 x_i^j = 10,000, j=1,2\\
+& w_k \ge 10,000 - \sum_{i=1}^2 X_i^k(3) X(0)^{-1} x^2_i - e^{0.02(3)} x_3^2 - \gamma, \forall k = 1,\ldots, N\\
+&\sum_{i=1}^2 X_i^k(j) (x_i^{j+1}-x_i^j) + e^{0.02j}(x_3^{j+1}-x_3^j) = 0\\
+&x \ge 0, w \ge 0, \gamma \in \mathbb{R}
+\end{align*}
+
+Note that $x^{j+1}$ can depend on $X(j)$. In other words, we are allowed to adjust our reallocation based on the returns in year 1. I wrote Python code that creates a Gurobi model for this problem. It then plots the efficient frontiers for different correlations between the stock returns (figure \ref{fig:multi_stage_no_transaction_costs}). Since the size of the scenario tree is the number of branches cubed (3 stages), the number of branches at each node can't be too large. Thus computed many efficient frontiers for each correlation, and averaged them. This overestimates the expected return, but it seems to give a better picture than just maximizing the size of the tree. I decided to use 60 branches at each node, and calculated each efficient frontier 150 times.
+Just like with the Markowitz model, the efficient frontier decreases as the correlation increases. This makes sense, because we can diversify more of the risk away when the stock returns are negatively correlated.
+\begin{figure}
+\centering
+\includegraphics[scale=0.5]{multi_stage_no_transaction_costs.png}
+\caption{Efficient frontier based on the multi-stage AV@R model. Does not include transaction costs.  Code can be found in the appendix.}
+\label{fig:multi_stage_no_transaction_costs}
+\end{figure}
+\begin{figure}
+\centering
+\includegraphics[scale=0.5]{multi_stage_with_transaction_costs.png}
+\caption{Efficient frontier based on the multi-stage AV@R model. Does include transaction costs.  Code can be found in the appendix.}
+\label{fig:multi_stage_with_transaction_costs}
+\end{figure}
+
+\section{Multistage Portfolio Optimization With Transaction Costs}
+Extending the above model to include transaction costs is relatively straightforward, because the units of $x$ is in the number of securities purchased. Thus we just need to keep track of the difference in the number of each type of stock and risk-free asset we own at each stage.
+
+The model is the same as in the previous section. But now let
+\begin{align*}
+y_i \ge x_i^{2} - x_i^1\\
+y_i  \ge x_i^{1} - x_i^{2}\\
+\end{align*}
+There is a $y^j$ variable at each node in the scenario tree at stage $j$. Let $c$ be the cost to trade one security. Then the objective is
+\begin{equation*}
+\max_{x,w,\gamma} \sum_{i=1}^2 \bar{\mu}_i x^2_i +  e^{0.02(3)} x_3^3 + \frac{c}{(\text{number of nodes} - 1)}\sum_{i=1}^3 y_i\\
+\end{equation*}
+Together the constraint and objective  force $y$ to be equal to number of shares bought or sold. The reason we divide $c$ by $(\text{number of nodes}- 1)$ is that there is a vector of $y$ variables at every node in the tree except for at the root node. We just assume that we can buy the securities at the beginning without paying any transaction costs. As we would expect, the efficient frontier decreases as the costs go up (figure \ref{fig:multi_stage_with_transaction_costs}). As the transaction costs go up, the efficient frontier should be the same as the single-stage frontier. The increased costs discourage any trading after the beginning.
 
 \bibliography{719_project}
 \bibliographystyle{ieeetr}

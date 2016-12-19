@@ -10,7 +10,7 @@ n_scen = (10**2)
 
 capital = 10000
 interest_rate = 0.01
-t = 4
+t = 3
 alpha = 0.95
 max_avar = 1000
 
@@ -122,6 +122,6 @@ for avar in avars:
 plt.plot(avars, returns, linestyle='-', marker='.')
 plt.xlabel('Max Allowed Avg. Value at Risk ')
 plt.ylabel('Return %')
-
+plt.ylim(ymin=0, ymax=19)
 plt.grid()
 plt.show()
