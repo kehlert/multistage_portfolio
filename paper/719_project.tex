@@ -106,8 +106,41 @@ Thus $X_t$ has a log-normal distribution, and
 \end{align*}
 
 \subsection{Correlated d-Dimensional Geometric Brownian Motion}\label{corr_gmb}
-If the Brownian motions driving each SDE are all independent, then the solution is just the d-dimensional version of \eqref{eq:GBM_soln}. The much more interesting case is when there is a correlation between the different dimensions. In other words, we want to find and solve the SDE where $X(t)$ is d-dimensional GBM and $\text{Corr}(\log X_i(t), \log X_j(t)) = \rho_{ij}$. This would allow us to model correlated stock returns. We are interested in the log of the prices, because we want the returns to be correlated. We will see that even if the returns are correlated, the correlation between the stock prices goes to zero.
+If the Brownian motions driving each SDE are all independent, then the solution is just the d-dimensional version of \eqref{eq:GBM_soln}. The much more interesting case is when there is a correlation between the different dimensions. In other words, we want to find and solve the SDE where $X(t)$ is d-dimensional GBM and $\text{Corr}(\log X_i(t), \log X_j(t)) = \rho_{ij}$. This would allow us to model correlated stock returns. We are interested in the log of the prices, because we want the returns to be correlated. We are not interested in whether or not the stock prices are correlated. In fact, the correlation between the prices goes to zero as times goes to infinity, even if the returns have a positive correlation that's less than one.
 
+The return of stock $i$,$R_i(t)$, is equal to
+\begin{equation*}
+R_i(t) = \log \frac{X_i(t)}{X_i(0)} = (\mu_i-\sigma_i^2/2)t +\sigma_i dB_i(t)
+\end{equation*}
+If Corr$(B_i(t),B_j(t)) = \rho_{ij}$, then
+\begin{equation*}
+\text{Corr}(R_i(t),R_j(t)) = \rho_{ij}
+\end{equation*}
+Therefore, if we can construct $d$-dimensional Brownian motion that has correlation matrix $\Sigma$, where $(\Sigma)_{ij} = \rho_{ij}$, then we are done. Suppose we can choose $\alpha_{ij}$ such that
+\begin{align*}
+\sum_{k=1}^i \alpha_{ik}^2 &= 1, \text{ where } 1\le i\le d\\
+\sum_{k=1}^i \alpha_{ik}\alpha_{jk}&= \rho_{ij}, \forall j < i \le d
+\end{align*}
+In other words, we need to find a $d\times d$ lower-triangular matrix $L$
+\begin{equation*}
+\begin{bmatrix}
+    \alpha_{11} & 0 & 0 & \dots  & 0 \\
+    \alpha_{21} & \alpha_{22} & 0 & \dots  & 0 \\
+    \vdots & \vdots & \vdots & \ddots & \vdots \\
+    \alpha_{d1} & \alpha_{d2} & \alpha_{d3}& \dots  & \alpha_{dd}
+\end{bmatrix}
+\end{equation*}
+such that
+\begin{equation*}
+L L^T = \Sigma
+\end{equation*}
+This is equivalent to finding a Cholesky decomposition of $\Sigma$. Thus $L$ exists as long as $\Sigma$ is positive definite.
+
+Say we have $d$-dimensional independent Brownian motion, $B(t)$, then
+\begin{equation*}
+\tilde{B}(t) = LB(t)
+\end{equation*}
+is also Brownian motion. $\tilde{B}(t)$ is a martingale, and each component has a quadratic variation of $t$, thus by the Levy characterization of Brownian motion, it is also Brownian motion. Furthermore, based on our choice of $L$, we can check that  $\tilde{B}(t)$ has the correlation matrix $\Sigma$. Thus to simulate correlated returns, we just simulate regular Brownian motion, and then apply the matrix $L$ to it.
 \section{Portfolio Optimization}
 Assume that there are $n$ stocks we can invest in, and also one risk-free asset that gives a constant rate of return $r$. We will model the path of all the stock prices as $n$ independent geometric Brownian motions. The average rate of return (also known as drift) and the volatility of each stock can vary.
 
