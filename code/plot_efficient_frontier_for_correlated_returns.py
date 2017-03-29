@@ -33,35 +33,6 @@ stage_times = [0, 1, 3]
 #(probability, new rate)
 #interest_rate_scenarios = [(0, 0.001), (1, 0.01)] 
 
-#####################
-## construct the model
-#####################
-# model, securities, allocations, avar_constraint = get_multi_stage_model(capital,
-#                                                                         interest_rate,
-#                                                                         initial_prices,
-#                                                                         drift,
-#                                                                         volatility,
-#                                                                         correlation_mat,
-#                                                                         alpha,
-#                                                                         max_avar,
-#                                                                         branch_factor,
-#                                                                         stage_times,
-#                                                                         cost)                
-
-####################
-## optimize and report output
-####################
-# model.optimize()
-# print('Allocations:')
-# for s in sorted(securities):
-#     print('%s: %g' % (s, allocations[0,s].x * initial_prices[s] / capital))
-# 
-# #gives the percent return
-# percent_return = (model.objVal / capital - 1)*100
-# print('Projected Return: %0.2f%%' % round(percent_return,2))
-
-#sys.exit(0)
-
 ##########
 ## plot efficient frontier (x-axis = AV@R, y-axis = return as a %)
 ##########
@@ -80,17 +51,10 @@ stage_times = [0, 1, 3]
 #     print('N: %g' % i)
 #     for corr in correlations:
 #         correlation_mat = np.array([[1,corr],[corr,1]])
-#         model, securities, allocations, avar_constraint = get_multi_stage_model(capital,
-#                                                                                 interest_rate,
-#                                                                                 initial_prices,
-#                                                                                 drift,
-#                                                                                 volatility,
-#                                                                                 correlation_mat,
-#                                                                                 alpha,
-#                                                                                 max_avar,
-#                                                                                 branch_factor,
-#                                                                                 stage_times,
-#                                                                                 cost)
+#         model, securities, allocations, avar_constraint =
+#   get_multi_stage_model(capital, interest_rate, initial_prices, drift,
+#                         volatility, correlation_mat, alpha, max_avar, 
+#                         branch_factor, stage_times, cost)
 #         for avar in avars:
 #             avar_constraint.RHS = avar
 #             model.update()
@@ -126,17 +90,9 @@ for i in range(0, N):
     print('N: %g' % i)
     for cost in costs:
         correlation_mat = np.array([[1,0],[0,1]])
-        model, securities, allocations, avar_constraint = get_multi_stage_model(capital,
-                                                                                interest_rate,
-                                                                                initial_prices,
-                                                                                drift,
-                                                                                volatility,
-                                                                                correlation_mat,
-                                                                                alpha,
-                                                                                max_avar,
-                                                                                branch_factor,
-                                                                                stage_times,
-                                                                                cost)
+        model, securities, allocations, avar_constraint =
+            get_multi_stage_model(capital, interest_rate, initial_prices, drift,
+volatility, correlation_mat, alpha, max_avar, branch_factor, stage_times, cost)
         for avar in avars:
             avar_constraint.RHS = avar
             model.update()
